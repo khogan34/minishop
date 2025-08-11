@@ -1,0 +1,39 @@
+name: Build Windows EXE (Electron)
+
+on:
+  # Runs automatically on push to main; you can also trigger it manually
+  push:
+    branches: [ main ]
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install deps (clean)
+        run: npm ci
+
+      - name: Build web app (Vite)
+        run: npm run build
+
+      - name: Build portable EXE (electron-builder)
+        run: npm run electron:build
+
+      - name: Upload artifact (.exe)
+        uses: actions/upload-artifact@v4
+        with:
+          name: MiniShop-Windows-Portable
+          path: |
+            release/*.exe
+            release/*.zip
+          if-no-files-found: error
